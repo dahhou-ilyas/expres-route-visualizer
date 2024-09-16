@@ -1,6 +1,6 @@
 {
   "name": "express-route-visualizer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A tool to visualize Express.js routes",
   "main": "index.js",
   "scripts": {
