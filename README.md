@@ -55,27 +55,68 @@ const express = require('express');
 const generateHTML = require("expres-route-visualizer");
 const app = express();
 
-// Define middlewares
+// Middlewares
 const authMiddleware = (req, res, next) => {
     console.log('Auth middleware');
     next();
 };
 
-// Define routes
+const logMiddleware = (req, res, next) => {
+    console.log(`Request to: ${req.path}`);
+    next();
+};
+
+const timingMiddleware = (req, res, next) => {
+    console.time('Response time');
+    res.on('finish', () => console.timeEnd('Response time'));
+    next();
+};
+
+// Routes
+
+// Home route
 app.get('/', (req, res) => res.send('Home'));
+
+// Admin routes
+app.get('/admin/dashboard', authMiddleware, timingMiddleware, (req, res) => res.send('Admin Dashboard'));
+app.get('/admin/settings', authMiddleware, logMiddleware, (req, res) => res.send('Admin Settings'));
+app.post('/admin/create', authMiddleware, (req, res) => res.send('Create admin'));
+
+// Admin report routes (hierarchique sous admin)
+app.get('/admin/reports', authMiddleware, (req, res) => res.send('Report list'));
+app.get('/admin/reports/:reportId', authMiddleware, (req, res) => res.send(`Get report ${req.params.reportId}`));
+app.post('/admin/reports/create', authMiddleware, logMiddleware, (req, res) => res.send('Create report'));
+
+// User routes
+app.get('/users', authMiddleware, (req, res) => res.send('User list'));
+app.post('/users/create', authMiddleware, logMiddleware, (req, res) => res.send('Create user'));
+app.get('/users/:id', authMiddleware, (req, res) => res.send(`Get user ${req.params.id}`));
+app.put('/users/:id', authMiddleware, (req, res) => res.send(`Update user ${req.params.id}`));
+app.delete('/users/:id', authMiddleware, (req, res) => res.send(`Delete user ${req.params.id}`));
+
+// Login and register routes
+app.post('/login', logMiddleware, (req, res) => res.send('Login user'));
+app.post('/register', (req, res) => res.send('Register user'));
+
+// Other hierarchies for testing
 app.get('/dashboard', authMiddleware, (req, res) => res.send('Dashboard'));
-app.post('/login', (req, res) => res.send('Login user'));
+app.get('/dashboard/settings', authMiddleware, (req, res) => res.send('Dashboard Settings'));
 
 // Generate route visualization
 generateHTML(app);
 
 // Start the server
-app.listen(3000, () => console.log('Server running on port 3000'));
+app.listen(3010, () => console.log('Server running on port 3010'));
+
 ```
 
 ## Output
 
 The generated HTML file will display a tree structure of your routes, with each node representing a route segment. Clicking on a node will show a popup with details about the route's HTTP methods and associated middlewares.
+
+![Alt text](./images/hearchiq.png)
+
+![Alt text](./images/hearchiq2.png)
 
 ## Contributing
 
